@@ -18,22 +18,18 @@ package com.mascotcapsule.micro3d.v3;
 
 public class Util3D
 {
-	private Util3D() {  }
-
-	// why return ints?
-	// it must do something more...
 	public static final int sqrt(int t)
 	{
-		return (int)Math.sqrt(t);
+		throw new UnsupportedOperationException("Not implemented yet");
 	}
 
-	public static final int sin(int t)
+	public static int sin(int angle)
 	{
-		return (int)Math.sin(t);
+		return (int)(1024 * Math.sin(angle * 2.0 * Math.PI / 4096));
 	}
 
-	public static final int cos(int t)
+	public static int cos(int angle)
 	{
-		return (int)Math.cos(t);
+		return (int)(1024 * Math.cos(angle * 2.0 * Math.PI / 4096));
 	}
 }

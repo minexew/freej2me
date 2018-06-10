@@ -16,56 +16,77 @@
 */
 package com.mascotcapsule.micro3d.v3;
 
-public class Light
-{
+public class Light {
+    private Vector3D dir;
+    private Vector3D parDir;
+    private int dirIntensity;
+    private int ambIntensity;
+    private int parIntensity;
 
-	private Vector3D dir;
-	private Vector3D parDir;
-	private int dirIntensity;
-	private int ambIntensity;
-	private int parIntensity;
+    public Light() {
+        this(new Vector3D(0, 0, 4096), 4096, 0);
+    }
 
-	public Light() {  }
+    public Light(Vector3D dir, int dirIntensity, int ambIntensity) {
+        this.dir = dir;
+        this.dirIntensity = dirIntensity;
+        this.ambIntensity = ambIntensity;
+    }
 
-	public Light(Vector3D Dir, int DirIntensity, int AmbIntensity)
-	{
-		dir = Dir;
-		dirIntensity = DirIntensity;
-		ambIntensity = AmbIntensity;
-	}
+    public final int getAmbientIntensity() {
+        return ambIntensity;
+    }
 
+    @Deprecated
+    public final int getAmbIntensity() {
+        return ambIntensity;
+    }
 
-	public final int getDirIntensity() { return dirIntensity; }
+    public final Vector3D getDirection() {
+        return dir;
+    }
 
-	public final int getParallelLightIntensity() { return parIntensity; }
+    @Deprecated
+    public final int getDirIntensity() {
+        return dirIntensity;
+    }
 
-	public final void setDirIntensity(int value) { dirIntensity = value; }
+    public final Vector3D getParallelLightDirection() {
+        return parDir;
+    }
 
-	public final void setParallelLightIntensity(int value) { parIntensity = value; }
+    public final int getParallelLightIntensity() {
+        return parIntensity;
+    }
 
-	public final int getAmbIntensity() { return ambIntensity; }
+    public final void setAmbientIntensity(int p) {
+        ambIntensity = p;
+    }
 
-	public final int getAmbientIntensity() { return ambIntensity; }
+    @Deprecated
+    public final void setAmbIntensity(int value) {
+        ambIntensity = value;
+    }
 
-	public final void setAmbIntensity(int value) { ambIntensity = value; }
+    @Deprecated
+    public final void setDirection(Vector3D v) {
+        dir.x = v.x;
+        dir.y = v.y;
+        dir.z = v.z;
+    }
 
-	public final void setAmbientIntensity(int value) { ambIntensity = value; }
+    @Deprecated
+    public final void setDirIntensity(int value) {
+        dirIntensity = value;
+    }
 
-	public final Vector3D getDirection() { return dir; }
+    public final void setParallelLightDirection(Vector3D v) {
+        parDir.x = v.x;
+        parDir.y = v.y;
+        parDir.z = v.z;
+    }
 
-	public final Vector3D getParallelLightDirection() { return parDir; }
-
-	public final void setDirection(Vector3D v)
-	{
-		dir.x = v.x;
-		dir.y = v.y;
-		dir.z = v.z;
-	}
-
-	public final void setParallelLightDirection(Vector3D v)
-	{
-		parDir.x = v.x;
-		parDir.y = v.y;
-		parDir.z = v.z;
-	}
+    public final void setParallelLightIntensity(int value) {
+        parIntensity = value;
+    }
 }

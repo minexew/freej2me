@@ -16,72 +16,101 @@
 */
 package com.mascotcapsule.micro3d.v3;
 
-public class Vector3D
-{
-	public int x;
-	public int y;
-	public int z;
+public class Vector3D {
+    private static final int UNIT = 4096;
 
-	public Vector3D() { x=0; y=0; z=0; }
+    public int x;
+    public int y;
+    public int z;
 
-	public Vector3D(Vector3D v) { x=v.x; y=v.y; z=v.z; }
+    public Vector3D() {
+    }
 
-	public Vector3D(int X, int Y, int Z) { x=X; y=Y; z=Z; }
+    public Vector3D(Vector3D v) {
+        this.x = v.x;
+        this.y = v.y;
+        this.z = v.z;
+    }
 
+    public Vector3D(int x, int y, int z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
 
-	public final int getX() { return x; }
+    public final int getX() {
+        return x;
+    }
 
-	public final int getY() { return y; }
+    public final int getY() {
+        return y;
+    }
 
-	public final int getZ() { return z; }
+    public final int getZ() {
+        return z;
+    }
 
-	public final void setX(int X) { x=X; }
+    public final int innerProduct(Vector3D v) {
+        return (this.x * v.x + this.y * v.y + this.z * v.z) / UNIT;
+    }
 
-	public final void setY(int Y) { y=Y; }
+    public static int innerProduct(Vector3D a, Vector3D b) {
+        return (a.x * b.x + a.y * b.y + a.z * b.z) / UNIT;
+    }
 
-	public final void setZ(int Z) { z=Z; }
+    public final void outerProduct(Vector3D v) {
+        int x = (this.y * v.z - this.z * v.y) / UNIT;
+        int y = (this.z * v.x - this.x * v.z) / UNIT;
+        int z = (this.x * v.y - this.y * v.x) / UNIT;
 
-	public final void set(Vector3D v) { x=v.x; y=v.y; z=v.z; }
+        set(x, y, z);
+    }
 
-	public final void set(int X, int Y, int Z) { x=X; y=Y; z=Z; }
+    public static final Vector3D outerProduct(Vector3D a, Vector3D b) {
+        Vector3D vec = new Vector3D(a);
+        vec.outerProduct(b);
+        return vec;
+    }
 
-	public final void unit()
-	{
-		double len = Math.sqrt(x*x + y*y + z*z);
-		x = (int)(x/len);
-		y = (int)(y/len);
-		z = (int)(z/len);
-	}
+    public final void set(int x, int y, int z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
 
-	public final int innerProduct(Vector3D v)
-	{
-		return (x*v.x)+(y*v.y)+(z*v.z);
-	}
+    public final void set(Vector3D v) {
+        this.x = v.x;
+        this.y = v.y;
+        this.z = v.z;
+    }
 
-	public final void outerProduct(Vector3D v)
-	{
-		// needs to return a 3x3 matrix
-		// Lets find the cross-product instead
-		// as the exterior product is a generalization
-		// of the cross product
-		int t1 = (y*v.z) - (z*v.y);
-		int t2 = (z*v.x) - (x*v.z);
-		int t3 = (x*v.y) - (y*v.x);
-		x = t1;
-		y = t2;
-		z = t3;
-	}
+    public final void setX(int x) {
+        this.x = x;
+    }
 
-	public static final int innerProduct(Vector3D a, Vector3D b)
-	{
-		// Dot product
-		return (a.x*b.x)+(a.y*b.y)+(a.z*b.z);
-	}
+    public final void setY(int y) {
+        this.y = y;
+    }
 
-	public static final Vector3D outerProduct(Vector3D a, Vector3D b)
-	{
-		Vector3D t = new Vector3D(a);
-		t.outerProduct(b);
-		return t;
-	}
+    public final void setZ(int z) {
+        this.z = z;
+    }
+
+    public final void unit() {
+        int len = this.x * this.x + this.y * this.y + this.z * this.z;
+
+        if (len == 0)
+            return;
+
+        double scale = 1.0 / Math.sqrt((double) len / (UNIT * UNIT));
+
+        this.x = (int) (this.x * scale);
+        this.y = (int) (this.y * scale);
+        this.z = (int) (this.z * scale);
+    }
+
+    @Override
+    public String toString() {
+        return "[" + this.x + ", " + this.y + ", " + this.z + "]";
+    }
 }

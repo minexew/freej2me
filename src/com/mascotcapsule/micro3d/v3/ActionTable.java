@@ -20,20 +20,39 @@ import java.io.IOException;
 
 public class ActionTable
 {
+	public ActionTable(byte[] b)
+	{
+		//throw new UnsupportedOperationException("Not implemented yet");
+	}
 
-	public ActionTable(byte[] b) {  }
+	public ActionTable(String name) throws IOException
+	{
+		//throw new UnsupportedOperationException("Not implemented yet");
+	}
 
-	public ActionTable(String name) throws IOException {  }
+	public final void dispose()
+	{
+		throw new UnsupportedOperationException("Not implemented yet");
+	}
 
+	public final int getNumAction()
+	{
+		throw new UnsupportedOperationException("Not implemented yet");
+	}
 
-	public final void dispose() {  }
+	public final int getNumActions()
+	{
+		throw new UnsupportedOperationException("Not implemented yet");
+	}
 
-	public final int getNumAction() { return 0; }
+	public final int getNumFrame(int idx)
+	{
+		throw new UnsupportedOperationException("Not implemented yet");
+	}
 
-	public final int getNumActions() { return 0; }
-
-	public final int getNumFrame(int idx) { return 0; }
-
-	public final int getNumFrames(int idx) { return 0; }
-
+	public final int getNumFrames(int idx)
+	{
+		//throw new UnsupportedOperationException("Not implemented yet");
+		return 1;
+	}
 }

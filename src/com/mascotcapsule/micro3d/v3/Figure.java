@@ -16,15 +16,14 @@
 */
 package com.mascotcapsule.micro3d.v3;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
-import java.io.InputStream;
-import java.io.ByteArrayOutputStream;
 
 import org.recompile.mobile.Mobile;
 
 public class Figure
 {
+	// TODO: find any documentation of the MB format
 
 	private byte[] figure;
 
@@ -34,7 +33,22 @@ public class Figure
 
 	private int pattern = 0;
 
-	public Figure(byte[] fig) { figure = fig; }
+	public Figure(byte[] b) { figure = b;
+	if (b.length == 2985) {
+		try {
+			FileOutputStream stream = new FileOutputStream("skybox.mbac");
+			try {
+				stream.write(b);
+			} finally {
+				stream.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	}
 
 	public Figure(String name) throws IOException
 	{
