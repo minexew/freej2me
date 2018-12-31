@@ -16,10 +16,10 @@
 */
 package com.mascotcapsule.micro3d.v3;
 
-import java.util.ArrayList;
-
 public class FigureLayout
 {
+	private ProjectionType projectionType;
+
 	private int scalex=1;
 	private int scaley=1;
 	private int centerx=1;
@@ -30,68 +30,128 @@ public class FigureLayout
 
 	private int selected = 0;
 
-	private ArrayList<AffineTrans> trans = new ArrayList<AffineTrans>();
+	private AffineTrans[] trans;
 
+	private int zNear;
+	private int zFar;
+	private int angle, width, height;
 
-	public FigureLayout() {  }
-
-	public FigureLayout(AffineTrans atrans, int sx, int sy, int cx, int cy)
-	{
-		scalex = sx;
-		scaley = sy;
-		centerx = cx;
-		centery = cy;
-		trans.add(atrans);
+	public FigureLayout() {
+		this(null, 512, 512, 0, 0);
 	}
 
-
-	public final AffineTrans getAffineTrans() { return trans.get(selected); }
-
-	public final void setAffineTrans(AffineTrans atrans)
+	public FigureLayout(AffineTrans trans, int sx, int sy, int cx, int cy)
 	{
-		if(trans.size()==0)
-		{
-			trans.add(atrans);
-		}
-		else
-		{
-			trans.set(selected, atrans);
-		}
+		this.setAffineTrans(trans);
+		this.setScale(sx, sy);
+		this.setCenter(cx, cy);
 	}
 
-	public final void setAffineTransArray(AffineTrans[] atrans)
-	{
-		for(int i=0; i<atrans.length; i++)
-		{
-			trans.add(atrans[i]);
-		}
+	public final AffineTrans getAffineTrans() {
+		return trans[selected];
 	}
 
-	public final void setAffineTrans(AffineTrans[] atrans) { setAffineTransArray(atrans); }
+	public final void setAffineTrans(AffineTrans trans)
+	{
+		this.trans = new AffineTrans[] { trans };
+		selected = 0;
+	}
 
-	public final void selectAffineTrans(int i) { selected = i; }
+	public final void setAffineTransArray(AffineTrans[] trans)
+	{
+		this.trans = trans;
+	}
 
-	public final int getScaleX() { return scalex; }
+	public final void setAffineTrans(AffineTrans[] trans) {
+		this.trans = trans;
+	}
 
-	public final int getScaleY() { return scaley; }
+	public final void selectAffineTrans(int i) {
+		selected = i;
+	}
 
-	public final void setScale(int x, int y) { scalex=x; scaley=y; }
+	public final int getScaleX() {
+		return scalex;
+	}
 
+	public final int getScaleY() {
+		return scaley;
+	}
 
-	public final int getParallelWidth() { return pwidth; }
+	public final void setScale(int x, int y) {
+		scalex = x;
+		scaley = y;
+		projectionType = ProjectionType.PARALLEL_SCALE;
+	}
 
-	public final int getParallelHeight() { return pheight; }
+	public final int getParallelWidth() {
+		return pwidth;
+	}
 
-	public final void setParallelSize(int w, int h) { pwidth=w; pheight=h; }
+	public final int getParallelHeight() {
+		return pheight;
+	}
 
+	public final void setParallelSize(int w, int h) {
+		pwidth = w;
+		pheight = h;
+		projectionType = ProjectionType.PARALLEL_SIZE;
+	}
 
-	public final int getCenterX() { return centerx; }
+	public final int getCenterX() {
+		return centerx;
+	}
 
-	public final int getCenterY() { return centery; }
+	public final int getCenterY() {
+		return centery;
+	}
 
-	public final void setCenter(int x, int y) { centerx=x; centery=y; }
+	public final void setCenter(int x, int y) {
+		centerx = x;
+		centery = y;
+	}
 
-	public final void setPerspective(int x, int y, int z) {  }
+	public final void setPerspective(int zNear, int zFar, int angle) {
+		// Angle is FOV, but is it horizontal or vertical?
+		// Or perhaps equivalent-horizontal? (see https://quakewiki.org/wiki/fov)
 
-	public final void setPerspective(int x, int y, int z, int w) {  }
+		projectionType = ProjectionType.PERSPECTIVE_FOV;
+		this.zNear = zNear;
+		this.zFar = zFar;
+		this.angle = angle;
+	}
+
+	public final void setPerspective(int zNear, int zFar, int width, int height) {
+		projectionType = ProjectionType.PERSPECTIVE_WH;
+		this.zNear = zNear;
+		this.zFar = zFar;
+		this.width = width;
+		this.height = height;
+	}
+
+	// Private API
+
+	ProjectionType getProjectionType() {
+		return projectionType;
+	}
+
+	int getPerspectiveAngle() {
+		return angle;
+	}
+
+	int getPerspectiveWidth() {
+		return width;
+	}
+
+	int getPerspectiveHeight() {
+		return height;
+	}
+
+	int getZFar() {
+		return zFar;
+	}
+
+	int getZNear() {
+		return zNear;
+	}
 }

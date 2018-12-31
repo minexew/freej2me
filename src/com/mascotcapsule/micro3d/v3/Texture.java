@@ -55,4 +55,10 @@ public class Texture
 	}
 
 	public final void dispose() {  }
+
+	// Private API
+
+	public final byte[] getRawData() {
+		return texture;
+	}
 }

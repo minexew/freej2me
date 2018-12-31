@@ -16,8 +16,6 @@
 */
 package com.mascotcapsule.micro3d.v3;
 
-import com.mascotcapsule.micro3d.private_.ObjDump;
-
 import javax.microedition.lcdui.Graphics;
 
 public class Graphics3D
@@ -78,17 +76,20 @@ public class Graphics3D
 	public static final int PDATA_POINT_SPRITE_PARAMS_PER_FACE = 0x2000;
 	public static final int PDATA_POINT_SPRITE_PARAMS_PER_VERTEX = 0x3000;
 
+	public static final int PDATA_TEXURE_COORD_NONE = 0x0000;
 	public static final int PDATA_TEXURE_COORD = 0x3000;
 
 	public static final int PATTR_BLEND_ADD = 0x40;
 
 	private int skipframes = 30;
-	private com.mascotcapsule.micro3d.private_.ObjDump objdump = new ObjDump();
+	private ObjDump objdump = new ObjDump();
+	private CommandLogger cl = new CommandLogger();
 
 	public void flush() {
 		int dummy = 0;
 	}
 
+	// Used by GoF
 	public void renderPrimitives(Texture texture,
 								 int x,
 								 int y,
@@ -104,24 +105,19 @@ public class Graphics3D
 						"vertexCoords=[%d]{...}, normals=[%d]{...}, textureCoords=[%d]{...}, colors=[%d]={...})\n", texture, x, y, command, numPrimitives,
 				vertexCoords.length, normals.length, textureCoords.length, colors.length);
 
+		this.cl.renderPrimitives(texture, x, y, layout, effect, command, numPrimitives, vertexCoords, normals, textureCoords, colors);
+
 		int opcode = command & 0xFF000000;
 		int flags = command & 0x00FFFFFF;
-
-		if ((opcode & ~(PRIMITVE_POINT_SPRITES | PRIMITVE_QUADS | PRIMITVE_TRIANGLES)) != 0)
-			throw new IllegalArgumentException();
 
 		switch (opcode) {
 			case PRIMITVE_QUADS:
 				System.out.println("PRIMITVE_QUADS");
 
-				if ((flags & ~(PDATA_TEXURE_COORD | PATTR_BLEND_ADD)) != 0)
-					throw new IllegalArgumentException();
-
 				if ((flags & PDATA_TEXURE_COORD) != 0)
 					System.out.println("PDATA_TEXURE_COORD");
 
-				if ((flags & PATTR_BLEND_ADD) != 0)
-					System.out.println("PATTR_BLEND_ADD");
+				flags &= ~PDATA_TEXURE_COORD;
 
                 for (int p = 0; p < numPrimitives; p++) {
 					objdump.vertex(vertexCoords[p * 12 + 0] / 4096.0f, vertexCoords[p * 12 + 1] / 4096.0f, vertexCoords[p * 12 + 2] / 4096.0f);
@@ -164,49 +160,65 @@ public class Graphics3D
 
 				flags &= ~0x3000;
 
-				if ((flags & ~(PATTR_BLEND_ADD)) != 0)
-					throw new IllegalArgumentException();
-
 				break;
 
 			default:
 				throw new IllegalArgumentException();
 		}
+
+		if ((flags & ~(PATTR_BLEND_ADD)) != 0)
+			throw new IllegalArgumentException();
+
 	}
 
-
-	public void renderPrimitives(Figure fig,
+	/*public void renderPrimitives(Figure fig,
 								 int p1,
 								 int p2,
 								 FigureLayout figLayout,
 								 Effect3D paramEffect3D,
 								 int p3, int p4, int[] paramArrayOfInt1, int[] paramArrayOfInt2, int[] paramArrayOfInt3, int[] paramArrayOfInt4) {
 		int dummy = 0;
+	}*/
+
+	/*public void drawCommandList(Figure fig, int x, int y, FigureLayout layout, Effect3D effect, int[] commandList) {
+	}*/
+
+	// Used by GoF
+	public void renderFigure(Figure figure, int x, int y, FigureLayout layout, Effect3D effect) {
+		System.out.printf("renderFigure(%s, x=%d, y=%d, layout=%s, effect=%s)\n",
+				figure, x, y, layout, effect);
+
+		this.cl.renderFigure(figure, x, y, layout, effect);
 	}
 
-	public void drawCommandList(Figure fig, int p1, int p2, FigureLayout figLayout, Effect3D e3d, int[] p3) {int dummy = 0; }
+	// Used by GoF
+	public void drawFigure(Figure figure, int x, int y, FigureLayout layout, Effect3D effect) {
+		System.out.printf("drawFigure(%s, x=%d, y=%d, layout=%s, effect=%s)\n",
+				figure, x, y, layout, effect);
 
-	public void renderFigure(Figure fig, int p1, int p2, FigureLayout figLayout, Effect3D e3d) {
-		//System.out.printf("renderFigure(fig=%s, x=%d, y=%d, layout=..., effect=..., command=%08Xh, numPrimitives=%d, " +
-		//		"vertexCoords=[%d]{...}, normals=[%d]{...}, textureCoords=[%d]{...}, colors=[%d]={...})\n", fig, x, y, command, numPrimitives,
+		this.cl.drawFigure(figure, x, y, layout, effect);
 	}
-
-
-
-	public void drawFigure(Figure fig, int p1, int p2, FigureLayout figLayout, Effect3D e3d) {int dummy = 0; }
 
 	public void dispose() {int dummy = 0; }
 
 	public void bind(Graphics g) {
 		System.out.println("Graphics3D bind");
-		if (--skipframes == 0)
+		if (--skipframes == 0) {
 			objdump.begin();
+			cl.begin();
+		}
+
+		//cl.bind();
 	}
 
 	public void release(Graphics g) {
 		System.out.println("Graphics3D release");
+
+		//cl.release();
+
 		if (skipframes == 0) {
 			objdump.end();
+			cl.end();
 			System.exit(0);
 		}
 	}

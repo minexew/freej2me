@@ -20,6 +20,7 @@ import java.io.*;
 import java.util.ArrayList;
 
 import org.recompile.mobile.Mobile;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class Figure
 {
@@ -27,27 +28,15 @@ public class Figure
 
 	private byte[] figure;
 
-	private ArrayList<Texture> textures = new ArrayList<Texture>();
-
+	private Texture[] textures;
 	private int selected = 0;
-
 	private int pattern = 0;
 
-	public Figure(byte[] b) { figure = b;
-	if (b.length == 2985) {
-		try {
-			FileOutputStream stream = new FileOutputStream("skybox.mbac");
-			try {
-				stream.write(b);
-			} finally {
-				stream.close();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	private ActionTable act;
+	private int action, frame;
 
-	}
-
+	public Figure(byte[] b) {
+		figure = b;
 	}
 
 	public Figure(String name) throws IOException
@@ -69,21 +58,63 @@ public class Figure
 	}
 
 
-	public final void dispose() {  }
+	public final void dispose() {
+	}
 
-	public final void setPosture(ActionTable actiontable, int i, int j) {  }
+	public final void setPosture(ActionTable act, int action, int frame) {
+		this.act = act;
+		this.action = action;
+		this.frame = frame;
+	}
 
-	public final Texture getTexture() { return null; }
+	public final Texture getTexture() {
+		return textures[selected];
+	}
 
-	public final void setTexture(Texture texture) {  }
+	public final void setTexture(Texture t) {
+		this.textures = new Texture[] { t };
+		this.selected = 0;
+	}
 
-	public final void setTexture(Texture[] atexture) {  }
+	public final void setTexture(Texture[] t) {
+		this.textures = t;
+	}
 
-	public final int getNumTextures() { return textures.size(); }
+	public final int getNumTextures() {
+		return textures.length;
+	}
 
-	public final void selectTexture(int i) { selected = i; }
+	public final void selectTexture(int idx) {
+		selected = idx;
+	}
 
-	public final int getNumPattern() { return pattern; }
+	public final int getNumPattern() {
+		throw new NotImplementedException();
+	}
 
-	public final void setPattern(int value) { pattern = value; }
+	public final void setPattern(int idx) {
+		pattern = idx;
+	}
+
+	// Private API
+
+	final int getPattern() {
+		return pattern;
+	}
+
+	final int getPostureAction() {
+		return pattern;
+	}
+
+	final ActionTable getPostureActionTable() {
+		return act;
+	}
+
+	final int getPostureFrame() {
+		return frame;
+	}
+
+	final byte[] getRawData() {
+		return figure;
+	}
 }
