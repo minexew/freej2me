@@ -32,11 +32,6 @@ public class AffineTrans {
     public int m22;
     public int m23;
 
-    private final int m30 = 0;
-    private final int m31 = 0;
-    private final int m32 = 0;
-    private final int m33 = UNIT;
-
     public AffineTrans() {
     }
 
@@ -163,6 +158,7 @@ public class AffineTrans {
         u.unit();
 
         Vector3D v = Vector3D.outerProduct(n, u);
+        v.unit();
         System.out.println("corrected upVector=" + v);
 
         m00 = u.x;
@@ -177,9 +173,9 @@ public class AffineTrans {
         m21 = n.y;
         m22 = n.z;
 
-        m03 = -u.innerProduct(pos);
-        m13 = -v.innerProduct(pos);
-        m23 = -n.innerProduct(pos);
+        m03 = -u.innerProduct(pos) / UNIT;
+        m13 = -v.innerProduct(pos) / UNIT;
+        m23 = -n.innerProduct(pos) / UNIT;
 
         System.out.println("Test: xform " + look);
         Vector3D xformed = this.transform(look);
@@ -187,61 +183,39 @@ public class AffineTrans {
     }
 
     public final void mul(AffineTrans a) {
-        // FIXME: optional checking for overflow
-
-        int m00 = this.m00 * a.m00 + this.m01 * a.m10 + this.m02 * a.m20 + this.m03 * a.m30;
-        int m01 = this.m00 * a.m01 + this.m01 * a.m11 + this.m02 * a.m21 + this.m03 * a.m31;
-        int m02 = this.m00 * a.m02 + this.m01 * a.m12 + this.m02 * a.m22 + this.m03 * a.m32;
-        int m03 = this.m00 * a.m03 + this.m01 * a.m13 + this.m02 * a.m23 + this.m03 * a.m33;
-        int m10 = this.m10 * a.m00 + this.m11 * a.m10 + this.m12 * a.m20 + this.m13 * a.m30;
-        int m11 = this.m10 * a.m01 + this.m11 * a.m11 + this.m12 * a.m21 + this.m13 * a.m31;
-        int m12 = this.m10 * a.m02 + this.m11 * a.m12 + this.m12 * a.m22 + this.m13 * a.m32;
-        int m13 = this.m10 * a.m03 + this.m11 * a.m13 + this.m12 * a.m23 + this.m13 * a.m33;
-        int m20 = this.m20 * a.m00 + this.m21 * a.m10 + this.m22 * a.m20 + this.m23 * a.m30;
-        int m21 = this.m20 * a.m01 + this.m21 * a.m11 + this.m22 * a.m21 + this.m23 * a.m31;
-        int m22 = this.m20 * a.m02 + this.m21 * a.m12 + this.m22 * a.m22 + this.m23 * a.m32;
-        int m23 = this.m20 * a.m03 + this.m21 * a.m13 + this.m22 * a.m23 + this.m23 * a.m33;
-        this.m00 = m00 / UNIT;
-        this.m01 = m01 / UNIT;
-        this.m02 = m02 / UNIT;
-        this.m03 = m03 / UNIT;
-        this.m10 = m10 / UNIT;
-        this.m11 = m11 / UNIT;
-        this.m12 = m12 / UNIT;
-        this.m13 = m13 / UNIT;
-        this.m20 = m20 / UNIT;
-        this.m21 = m21 / UNIT;
-        this.m22 = m22 / UNIT;
-        this.m23 = m23 / UNIT;
+        this.mul(this, a);
     }
 
     public final void mul(AffineTrans a1, AffineTrans a2) {
         // FIXME: optional checking for overflow
 
-        int m00 = a1.m00 * a2.m00 + a1.m01 * a2.m10 + a1.m02 * a2.m20 + a1.m03 * a2.m30;
-        int m01 = a1.m00 * a2.m01 + a1.m01 * a2.m11 + a1.m02 * a2.m21 + a1.m03 * a2.m31;
-        int m02 = a1.m00 * a2.m02 + a1.m01 * a2.m12 + a1.m02 * a2.m22 + a1.m03 * a2.m32;
-        int m03 = a1.m00 * a2.m03 + a1.m01 * a2.m13 + a1.m02 * a2.m23 + a1.m03 * a2.m33;
-        int m10 = a1.m10 * a2.m00 + a1.m11 * a2.m10 + a1.m12 * a2.m20 + a1.m13 * a2.m30;
-        int m11 = a1.m10 * a2.m01 + a1.m11 * a2.m11 + a1.m12 * a2.m21 + a1.m13 * a2.m31;
-        int m12 = a1.m10 * a2.m02 + a1.m11 * a2.m12 + a1.m12 * a2.m22 + a1.m13 * a2.m32;
-        int m13 = a1.m10 * a2.m03 + a1.m11 * a2.m13 + a1.m12 * a2.m23 + a1.m13 * a2.m33;
-        int m20 = a1.m20 * a2.m00 + a1.m21 * a2.m10 + a1.m22 * a2.m20 + a1.m23 * a2.m30;
-        int m21 = a1.m20 * a2.m01 + a1.m21 * a2.m11 + a1.m22 * a2.m21 + a1.m23 * a2.m31;
-        int m22 = a1.m20 * a2.m02 + a1.m21 * a2.m12 + a1.m22 * a2.m22 + a1.m23 * a2.m32;
-        int m23 = a1.m20 * a2.m03 + a1.m21 * a2.m13 + a1.m22 * a2.m23 + a1.m23 * a2.m33;
-        this.m00 = m00 / UNIT;
-        this.m01 = m01 / UNIT;
-        this.m02 = m02 / UNIT;
-        this.m03 = m03 / UNIT;
-        this.m10 = m10 / UNIT;
-        this.m11 = m11 / UNIT;
-        this.m12 = m12 / UNIT;
-        this.m13 = m13 / UNIT;
-        this.m20 = m20 / UNIT;
-        this.m21 = m21 / UNIT;
-        this.m22 = m22 / UNIT;
-        this.m23 = m23 / UNIT;
+        int m00 = (a1.m00 * a2.m00 + a1.m01 * a2.m10 + a1.m02 * a2.m20 + 2048) >> 12;
+        int m01 = (a1.m00 * a2.m01 + a1.m01 * a2.m11 + a1.m02 * a2.m21 + 2048) >> 12;
+        int m02 = (a1.m00 * a2.m02 + a1.m01 * a2.m12 + a1.m02 * a2.m22 + 2048) >> 12;
+        int m03 = ((a1.m00 * a2.m03 + a1.m01 * a2.m13 + a1.m02 * a2.m23 + 2048) >> 12) + a1.m03;
+
+        int m10 = (a1.m10 * a2.m00 + a1.m11 * a2.m10 + a1.m12 * a2.m20 + 2048) >> 12;
+        int m11 = (a1.m10 * a2.m01 + a1.m11 * a2.m11 + a1.m12 * a2.m21 + 2048) >> 12;
+        int m12 = (a1.m10 * a2.m02 + a1.m11 * a2.m12 + a1.m12 * a2.m22 + 2048) >> 12;
+        int m13 = ((a1.m10 * a2.m03 + a1.m11 * a2.m13 + a1.m12 * a2.m23 + 2048) >> 12) + a1.m13;
+
+        int m20 = (a1.m20 * a2.m00 + a1.m21 * a2.m10 + a1.m22 * a2.m20 + 2048) >> 12;
+        int m21 = (a1.m20 * a2.m01 + a1.m21 * a2.m11 + a1.m22 * a2.m21 + 2048) >> 12;
+        int m22 = (a1.m20 * a2.m02 + a1.m21 * a2.m12 + a1.m22 * a2.m22 + 2048) >> 12;
+        int m23 = ((a1.m20 * a2.m03 + a1.m21 * a2.m13 + a1.m22 * a2.m23 + 2048) >> 12) + a1.m23;
+
+        this.m00 = m00;
+        this.m01 = m01;
+        this.m02 = m02;
+        this.m03 = m03;
+        this.m10 = m10;
+        this.m11 = m11;
+        this.m12 = m12;
+        this.m13 = m13;
+        this.m20 = m20;
+        this.m21 = m21;
+        this.m22 = m22;
+        this.m23 = m23;
     }
 
     @Deprecated
@@ -260,21 +234,21 @@ public class AffineTrans {
     }
 
     public final void rotationX(int r) {
-        m00 = UNIT;                 m01 = 0;                    m02 = 0;                    m03 = 0;
-        m10 = 0;                    m11 = 4 * Util3D.cos(r);    m12 = -4 * Util3D.sin(r);   m13 = 0;
-        m20 = 0;                    m21 = 4 * Util3D.sin(r);    m22 = 4 * Util3D.cos(r);    m23 = 0;
+        m00 = UNIT;                 m01 = 0;                    m02 = 0;
+        m10 = 0;                    m11 = 4 * Util3D.cos(r);    m12 = -4 * Util3D.sin(r);
+        m20 = 0;                    m21 = 4 * Util3D.sin(r);    m22 = 4 * Util3D.cos(r);
     }
 
     public final void rotationY(int r) {
-        m00 = 4 * Util3D.cos(r);    m01 = 0;                    m02 = 4 * Util3D.sin(r);    m03 = 0;
-        m10 = 0;                    m11 = UNIT;                 m12 = 0;                    m13 = 0;
-        m20 = -4 * Util3D.sin(r);   m21 = 0;                    m22 = 4 * Util3D.cos(r);    m23 = 0;
+        m00 = 4 * Util3D.cos(r);    m01 = 0;                    m02 = 4 * Util3D.sin(r);
+        m10 = 0;                    m11 = UNIT;                 m12 = 0;
+        m20 = -4 * Util3D.sin(r);   m21 = 0;                    m22 = 4 * Util3D.cos(r);
     }
 
     public final void rotationZ(int r) {
-        m00 = 4 * Util3D.cos(r);    m01 = -4 * Util3D.sin(r);   m02 = 0;                    m03 = 0;
-        m10 = 4 * Util3D.sin(r);    m11 = 4 * Util3D.cos(r);    m12 = 0;                    m13 = 0;
-        m20 = 0;                    m21 = 0;                    m22 = UNIT;                 m23 = 0;
+        m00 = 4 * Util3D.cos(r);    m01 = -4 * Util3D.sin(r);   m02 = 0;
+        m10 = 4 * Util3D.sin(r);    m11 = 4 * Util3D.cos(r);    m12 = 0;
+        m20 = 0;                    m21 = 0;                    m22 = UNIT;
     }
 
     public final void set(AffineTrans a) {
@@ -364,13 +338,13 @@ public class AffineTrans {
     }
 
     @Deprecated
-    public final void setRotationX(int x) {
-        throw new UnsupportedOperationException("Not implemented yet");
+    public final void setRotationX(int r) {
+        this.rotationX(r);
     }
 
     @Deprecated
-    public final void setRotationY(int y) {
-        throw new UnsupportedOperationException("Not implemented yet");
+    public final void setRotationY(int r) {
+        this.rotationY(r);
     }
 
     @Deprecated
@@ -384,9 +358,9 @@ public class AffineTrans {
     }
 
     public final Vector3D transform(Vector3D v) {
-        return new Vector3D((m00 * v.x + m01 * v.y + m02 * v.z) / UNIT + m03,
-                            (m10 * v.x + m11 * v.y + m12 * v.z) / UNIT + m13,
-                            (m20 * v.x + m21 * v.y + m22 * v.z) / UNIT + m23);
+        return new Vector3D((m00 * v.x + m01 * v.y + m02 * v.z + 2048) >> 12 + m03,
+                            (m10 * v.x + m11 * v.y + m12 * v.z + 2048) >> 12 + m13,
+                            (m20 * v.x + m21 * v.y + m22 * v.z + 2048) >> 12 + m23);
     }
 
     @Deprecated

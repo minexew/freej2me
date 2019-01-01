@@ -51,17 +51,17 @@ public class Vector3D {
     }
 
     public final int innerProduct(Vector3D v) {
-        return (this.x * v.x + this.y * v.y + this.z * v.z) / UNIT;
+        return (this.x * v.x + this.y * v.y + this.z * v.z);
     }
 
     public static int innerProduct(Vector3D a, Vector3D b) {
-        return (a.x * b.x + a.y * b.y + a.z * b.z) / UNIT;
+        return (a.x * b.x + a.y * b.y + a.z * b.z);
     }
 
     public final void outerProduct(Vector3D v) {
-        int x = (this.y * v.z - this.z * v.y) / UNIT;
-        int y = (this.z * v.x - this.x * v.z) / UNIT;
-        int z = (this.x * v.y - this.y * v.x) / UNIT;
+        int x = this.y * v.z - this.z * v.y;
+        int y = this.z * v.x - this.x * v.z;
+        int z = this.x * v.y - this.y * v.x;
 
         set(x, y, z);
     }
@@ -97,12 +97,14 @@ public class Vector3D {
     }
 
     public final void unit() {
-        int len = this.x * this.x + this.y * this.y + this.z * this.z;
+        // TODO: this should be eventually done entirely in fixed point
+
+        double len = (double)this.x * this.x + (double)this.y * this.y + (double)this.z * this.z;
 
         if (len == 0)
             return;
 
-        double scale = 1.0 / Math.sqrt((double) len / (UNIT * UNIT));
+        double scale = UNIT / Math.sqrt(len);
 
         this.x = (int) (this.x * scale);
         this.y = (int) (this.y * scale);
