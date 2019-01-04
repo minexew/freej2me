@@ -50,6 +50,7 @@ public class FreeJ2ME
 	private Config config;
 	private boolean useNokiaControls = true;
 	private boolean rotateDisplay = false;
+	private int limitFPS = 0;
 
 	public FreeJ2ME(String args[])
 	{
@@ -200,6 +201,9 @@ public class FreeJ2ME
 		int w = Integer.parseInt(config.settings.get("width"));
 		int h = Integer.parseInt(config.settings.get("height"));
 
+		limitFPS = Integer.parseInt(config.settings.get("fps"));
+		if(limitFPS>0) { limitFPS = 1000 / limitFPS; }
+
 		String sound = config.settings.get("sound");
 		if(sound.equals("on")) { Mobile.getPlatform().sound = true; }
 		if(sound.equals("off")) { Mobile.getPlatform().sound = false; }
@@ -248,6 +252,17 @@ public class FreeJ2ME
 			case KeyEvent.VK_9: return Mobile.KEY_NUM9;
 			case KeyEvent.VK_ASTERISK: return Mobile.KEY_STAR;
 			case KeyEvent.VK_NUMBER_SIGN: return Mobile.KEY_POUND;
+
+			case KeyEvent.VK_NUMPAD0: return Mobile.KEY_NUM0;
+			case KeyEvent.VK_NUMPAD7: return Mobile.KEY_NUM1;
+			case KeyEvent.VK_NUMPAD8: return Mobile.KEY_NUM2;
+			case KeyEvent.VK_NUMPAD9: return Mobile.KEY_NUM3;
+			case KeyEvent.VK_NUMPAD4: return Mobile.KEY_NUM4;
+			case KeyEvent.VK_NUMPAD5: return Mobile.KEY_NUM5;
+			case KeyEvent.VK_NUMPAD6: return Mobile.KEY_NUM6;
+			case KeyEvent.VK_NUMPAD1: return Mobile.KEY_NUM7;
+			case KeyEvent.VK_NUMPAD2: return Mobile.KEY_NUM8;
+			case KeyEvent.VK_NUMPAD3: return Mobile.KEY_NUM9;
 
 			case KeyEvent.VK_UP: return Mobile.KEY_NUM2;
 			case KeyEvent.VK_DOWN: return Mobile.KEY_NUM8;
@@ -325,6 +340,10 @@ public class FreeJ2ME
 				else
 				{
 					g.drawImage(Mobile.getPlatform().getLCD(), cx, cy, cw, ch, null);
+					if(limitFPS>0)
+					{
+						Thread.sleep(limitFPS);
+					}
 				}
 			}
 			catch (Exception e)
