@@ -26,38 +26,92 @@ package com.mascotcapsule.micro3d.v3;
 
 import org.recompile.utility.SExpWriter;
 
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 class CommandLogger {
+    private boolean embedDataBlobs = true;
+
     private SExpWriter writer;
 
-    private Set<Figure> figures = new HashSet<>();
-    private Set<Texture> textures = new HashSet<>();
+    private Map<Figure, String> figureRefs = new HashMap<>();
+    private Map<Texture, String> textureRefs = new HashMap<>();
 
     public void begin() {
         try {
-            this.writer = new SExpWriter(new PrintWriter("commandlist.txt", "UTF-8"));
+            this.writer = new SExpWriter(new PrintWriter("mascotcapsule-command-log.txt", "UTF-8"));
+
+            this.writer.enter("mascotcapsule-command-log");
         } catch (FileNotFoundException | UnsupportedEncodingException e) {
             e.printStackTrace();
         }
     }
 
+    public void beginFrame() {
+        if (this.writer == null) {
+            return;
+        }
+
+        this.writer.enter("frame");
+    }
+
     public void end() {
+        if (embedDataBlobs) {
+            writer.enter("data");
+
+            figureRefs.forEach((figure, ref) -> {
+                writer.leaf("figure", ref, stringify(figure.getRawData()));
+            });
+
+            textureRefs.forEach((texture, ref) -> {
+                writer.leaf("texture", ref, stringify(texture.getRawData()));
+            });
+
+            writer.leave();
+        }
+        else {
+            figureRefs.forEach((figure, ref) -> {
+                Path path = Paths.get(ref + ".mbac");
+
+                try {
+                    Files.write(path, figure.getRawData());
+                } catch (IOException e) {
+                    // the fuck can i do anyway
+                    e.printStackTrace();
+                }
+            });
+
+            textureRefs.forEach((texture, ref) -> {
+                Path path = Paths.get(ref + ".bmp");
+
+                try {
+                    Files.write(path, texture.getRawData());
+                } catch (IOException e) {
+                    // the fuck can i do anyway
+                    e.printStackTrace();
+                }
+            });
+        }
+
+        this.writer.leave();
         this.writer.close();
+    }
+
+    public void endFrame() {
+        if (this.writer == null) {
+            return;
+        }
+
+        this.writer.leave();
     }
 
     public void drawFigure(Figure figure, int x, int y, FigureLayout layout, Effect3D effect) {
         if (this.writer == null) {
             return;
         }
-
-        this.updateFigureData(figure);
 
         writer.enter("drawFigure");
         this.emitFigure(figure);
@@ -72,8 +126,6 @@ class CommandLogger {
         if (this.writer == null) {
             return;
         }
-
-        this.updateFigureData(figure);
 
         writer.enter("renderFigure");
         this.emitFigure(figure);
@@ -99,10 +151,8 @@ class CommandLogger {
             return;
         }
 
-        this.updateTextureData(texture);
-
         writer.enter("renderPrimitives");
-        writer.leaf("texture", Integer.toHexString(texture.hashCode()));
+        this.emitTexture(texture);
         writer.leaf("x", x);
         writer.leaf("y", y);
         this.emitFigureLayout(layout);
@@ -122,6 +172,13 @@ class CommandLogger {
             Graphics3D.PRIMITVE_POINT_SPRITES, "PRIMITVE_POINT_SPRITES"
     );
 
+    private static final Map<Integer, String> blendModes = Map.of(
+            Graphics3D.PATTR_BLEND_ADD, "PATTR_BLEND_ADD",
+            Graphics3D.PATTR_BLEND_HALF, "PATTR_BLEND_HALF",
+            Graphics3D.PATTR_BLEND_NORMAL, "PATTR_BLEND_NORMAL",
+            Graphics3D.PATTR_BLEND_SUB, "PATTR_BLEND_SUB"
+    );
+
     private static final Map<Integer, String> pointSpritesPdata = Map.of(
             Graphics3D.PDATA_POINT_SPRITE_PARAMS_PER_CMD, "PDATA_POINT_SPRITE_PARAMS_PER_CMD",
             Graphics3D.PDATA_POINT_SPRITE_PARAMS_PER_FACE, "PDATA_POINT_SPRITE_PARAMS_PER_FACE",
@@ -135,7 +192,8 @@ class CommandLogger {
 
     private String commandToString(int command) {
         int opcode = command & 0xFF000000;
-        int flags = command & 0x00FFFFFF;
+        int flags = command & 0x00FFFF9F;
+        int blend = command & 0x00000060;
 
         String s = Optional.of(opcodeNames.get(opcode)).orElseThrow(IllegalArgumentException::new);
 
@@ -155,10 +213,7 @@ class CommandLogger {
                 throw new IllegalArgumentException();
         }
 
-        if ((flags & Graphics3D.PATTR_BLEND_ADD) != 0) {
-            s += "|PATTR_BLEND_ADD";
-        }
-        flags = (flags & ~Graphics3D.PATTR_BLEND_ADD);
+        s += "|" + Optional.of(blendModes.get(blend)).orElseThrow(IllegalArgumentException::new);
 
         if (flags != 0) {
             throw new IllegalArgumentException();
@@ -169,7 +224,7 @@ class CommandLogger {
 
     private void emitActionTable(ActionTable act) {
         if (act != null) {
-            writer.leaf("actionTable", Integer.toHexString(act.hashCode()));
+            writer.leaf("actionTable", "...");
         }
         else {
             writer.leaf("actionTable", "null");
@@ -195,7 +250,9 @@ class CommandLogger {
     }
 
     private void emitFigure(Figure figure) {
-        writer.enter("figure", Integer.toHexString(figure.hashCode()));
+        String ref = this.getFigureDataRef(figure);
+
+        writer.enter("figure", ref);
         this.emitTexture(figure.getTexture());
         writer.leaf("pattern", figure.getPattern());
         this.emitActionTable(figure.getPostureActionTable());
@@ -246,7 +303,8 @@ class CommandLogger {
 
     private void emitTexture(Texture texture) {
         if (texture != null) {
-            writer.leaf("texture", Integer.toHexString(texture.hashCode()));
+            String ref = this.getTextureDataRef(texture);
+            writer.leaf("texture", ref);
         }
         else {
             writer.leaf("texture", "null");
@@ -262,27 +320,19 @@ class CommandLogger {
         return sb.toString();
     }
 
-    private void updateFigureData(Figure figure) {
-        if (!figures.contains(figure)) {
-            writer.enter("Figure", Integer.toHexString(figure.hashCode()));
-            writer.leaf("data", stringify(figure.getRawData()));
-            writer.leave();
-
-            figures.add(figure);
+    private String getFigureDataRef(Figure figure) {
+        if (!figureRefs.containsKey(figure)) {
+            figureRefs.put(figure, Integer.toHexString(Arrays.hashCode(figure.getRawData())));
         }
 
-        if (figure.getTexture() != null) {
-            this.updateTextureData(figure.getTexture());
-        }
+        return figureRefs.get(figure);
     }
 
-    private void updateTextureData(Texture texture) {
-        if (!textures.contains(texture)) {
-            writer.enter("Texture", Integer.toHexString(texture.hashCode()));
-            writer.leaf("data", stringify(texture.getRawData()));
-            writer.leave();
-
-            textures.add(texture);
+    private String getTextureDataRef(Texture texture) {
+        if (!textureRefs.containsKey(texture)) {
+            textureRefs.put(texture, Integer.toHexString(Arrays.hashCode(texture.getRawData())));
         }
+
+        return textureRefs.get(texture);
     }
 }

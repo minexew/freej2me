@@ -65,16 +65,16 @@ public class SExpWriter {
         this.writer.printf("(%s \"%s\")\n", name, value);
     }
 
-//    public void leaf(String name, Object... parameters) {
-//        indent(this.level);
-//        this.writer.printf("(%s", name);
-//
-//        for (Object parameter : parameters) {
-//            this.writer.printf(" \"%s\"", parameter);
-//        }
-//
-//        this.writer.printf(")\n");
-//    }
+    public void leaf(String name, Object... parameters) {
+        indent(this.level);
+        this.writer.printf("(%s", name);
+
+        for (Object parameter : parameters) {
+            this.writer.printf(" \"%s\"", parameter);
+        }
+
+        this.writer.printf(")\n");
+    }
 
     public void leaf(String name, int[] array) {
         indent(this.level);

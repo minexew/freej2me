@@ -79,11 +79,16 @@ public class Graphics3D
 	public static final int PDATA_TEXURE_COORD_NONE = 0x0000;
 	public static final int PDATA_TEXURE_COORD = 0x3000;
 
+	public static final int PATTR_BLEND_NORMAL = 0x00;
+	public static final int PATTR_BLEND_HALF = 0x20;
 	public static final int PATTR_BLEND_ADD = 0x40;
+	public static final int PATTR_BLEND_SUB = 0x60;
 
-	private int skipframes = 30;
 	private ObjDump objdump = new ObjDump();
 	private CommandLogger cl = new CommandLogger();
+
+	private int skipframes = 1;
+	private int recframes = 300;
 
 	public void flush() {
 		int dummy = 0;
@@ -108,7 +113,8 @@ public class Graphics3D
 		this.cl.renderPrimitives(texture, x, y, layout, effect, command, numPrimitives, vertexCoords, normals, textureCoords, colors);
 
 		int opcode = command & 0xFF000000;
-		int flags = command & 0x00FFFFFF;
+		int flags = command & 0x00FFFF9F;
+		int blend = command & 0x00000060;
 
 		switch (opcode) {
 			case PRIMITVE_QUADS:
@@ -124,7 +130,7 @@ public class Graphics3D
 					objdump.vertex(vertexCoords[p * 12 + 3] / 4096.0f, vertexCoords[p * 12 + 4] / 4096.0f, vertexCoords[p * 12 + 5] / 4096.0f);
 					objdump.vertex(vertexCoords[p * 12 + 6] / 4096.0f, vertexCoords[p * 12 + 7] / 4096.0f, vertexCoords[p * 12 + 8] / 4096.0f);
 					objdump.vertex(vertexCoords[p * 12 + 9] / 4096.0f, vertexCoords[p * 12 + 10] / 4096.0f, vertexCoords[p * 12 + 11] / 4096.0f);
-					objdump.quad(1, 2, 3, 4);
+					objdump.quad(-1, -2, -3, -4);
                 }
 				break;
 
@@ -142,7 +148,7 @@ public class Graphics3D
 						for (int p = 0; p < numPrimitives; p++) {
 							//System.out.printf("  (%d, %d, %d)\n", vertexCoords[p * 3], vertexCoords[p * 3 + 1], vertexCoords[p * 3 + 2]);
 							objdump.vertex(vertexCoords[p * 3] / 4096.0f, vertexCoords[p * 3 + 1] / 4096.0f, vertexCoords[p * 3 + 2] / 4096.0f);
-							objdump.point(1);
+							objdump.point(-1);
 						}
 						break;
 
@@ -166,9 +172,8 @@ public class Graphics3D
 				throw new IllegalArgumentException();
 		}
 
-		if ((flags & ~(PATTR_BLEND_ADD)) != 0)
+		if (flags != 0)
 			throw new IllegalArgumentException();
-
 	}
 
 	/*public void renderPrimitives(Figure fig,
@@ -203,23 +208,32 @@ public class Graphics3D
 
 	public void bind(Graphics g) {
 		System.out.println("Graphics3D bind");
-		if (--skipframes == 0) {
-			objdump.begin();
-			cl.begin();
+
+		if (skipframes > 0) {
+			if (--skipframes == 0) {
+				cl.begin();
+			}
 		}
 
-		//cl.bind();
+		cl.beginFrame();
 	}
 
 	public void release(Graphics g) {
 		System.out.println("Graphics3D release");
 
-		//cl.release();
+		cl.endFrame();
+		try {
+			Thread.sleep(33);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 
 		if (skipframes == 0) {
-			objdump.end();
-			cl.end();
-			System.exit(0);
+			if (--recframes == 0) {
+				//objdump.end();
+				cl.end();
+				System.exit(0);
+			}
 		}
 	}
 }

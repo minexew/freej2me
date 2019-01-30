@@ -25,11 +25,11 @@ public class Util3D
 
 	public static int sin(int angle)
 	{
-		return (int)(1024 * Math.sin((angle & 0xfff) * 2.0 * Math.PI / 4096));
+		return (int)Math.round(4096 * Math.sin((angle & 0xfff) * 2.0 * Math.PI / 4096));
 	}
 
 	public static int cos(int angle)
 	{
-		return (int)(1024 * Math.cos((angle & 0xfff) * 2.0 * Math.PI / 4096));
+		return (int)Math.round(4096 * Math.cos((angle & 0xfff) * 2.0 * Math.PI / 4096));
 	}
 }
